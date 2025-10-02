@@ -1,4 +1,5 @@
-const Board = require("../models/board");
+// const Board = require("../models/board");
+const { Board, List, Card, User } = require("../models");
 
 //create new board
 exports.createBoard = async (req, res) => {
@@ -41,13 +42,13 @@ exports.getAllBoards = async (req, res) => {
       });
     }
 
-    const boards = await Board.findAll({
+    const data = await Board.findAll({
       where: { userId },
       order: [["createdAt", "DESC"]],
     });
     return res.status(200).json({
       message: "Boards fetched successfully",
-      boards,
+      data,
       isSuccess: true,
     });
   } catch (error) {
@@ -163,19 +164,39 @@ exports.deleteBoard = async (req, res) => {
 //   }
 // };
 
-//get single board by id
 exports.getSingleBoard = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const boardDoc = await Board.findOne({ where: { id } });
+    const boardDoc = await Board.findOne({
+      where: { id },
+      include: [
+        {
+          model: List,
+          as: "lists", // must match association
+          include: [
+            { model: Card, as: "cards" }, // must match association
+          ],
+        },
+        { model: User, as: "user", attributes: ["id", "email"] },
+      ],
+      order: [
+        [{ model: List, as: "lists" }, "createdAt", "ASC"],
+        [
+          { model: List, as: "lists" },
+          { model: Card, as: "cards" },
+          "createdAt",
+          "ASC",
+        ],
+      ],
+    });
 
     if (!boardDoc) {
-      return res.status(404).json({
-        message: "Board not found",
-        isSuccess: false,
-      });
+      return res
+        .status(404)
+        .json({ message: "Board not found", isSuccess: false });
     }
+
     return res.status(200).json({
       message: "Board fetched successfully",
       board: boardDoc,
@@ -184,7 +205,7 @@ exports.getSingleBoard = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: "Error fetching board",
-      error: error,
+      error: error.message,
       isSuccess: false,
     });
   }

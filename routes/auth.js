@@ -39,4 +39,6 @@ router.get(
   authController.checkCurrentUser
 );
 
+router.get("/users", authController.getAllUsers);
+
 module.exports = router;

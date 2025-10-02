@@ -2,6 +2,16 @@ const jwt = require("jsonwebtoken");
 
 module.exports = async (req, res, next) => {
   try {
+    // ===== Dev shortcut =====
+    if (
+      process.env.NODE_ENV === "development" &&
+      !req.header("Authorization")
+    ) {
+      req.userId = 1; // fake user id for testing
+      return next();
+    }
+    // =======================
+
     const token = req.header("Authorization").split(" ")[1];
     if (!token) {
       return res.status(401).json({
@@ -9,6 +19,7 @@ module.exports = async (req, res, next) => {
         message: "Token missing",
       });
     }
+
     const decryptedTokenDetails = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decryptedTokenDetails.userId;
     next();

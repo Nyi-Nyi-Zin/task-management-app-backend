@@ -3,6 +3,24 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { validationResult } = require("express-validator");
 
+exports.getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll();
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "All users fetched successfully",
+      users,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      isSuccess: false,
+      message: "Error fetching users",
+      error: error.message,
+    });
+  }
+};
+
 //create new user
 exports.createUser = async (req, res) => {
   const errors = validationResult(req);

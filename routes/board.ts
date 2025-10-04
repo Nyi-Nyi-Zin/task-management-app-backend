@@ -1,30 +1,23 @@
-const { Router } = require("express");
-const authMiddleware = require("../middlewares/auth");
-
-const boardController = require("../controllers/board");
+// routes/board.ts
+import { Router } from "express";
+import authMiddleware from "../middlewares/auth";
+import boardController from "../controllers/board";
 
 const router = Router();
 
-//get all boards
+// Get all boards
 router.get("/get-boards", authMiddleware, boardController.getAllBoards);
 
-//create new board
+// Create new board
 router.post("/create-board", authMiddleware, boardController.createBoard);
 
-//update board
+// Update board
 router.put("/update-board/:id", authMiddleware, boardController.updateBoard);
 
-//delete board
+// Delete board
 router.delete("/delete-board/:id", authMiddleware, boardController.deleteBoard);
 
-//fetch old board title
-// router.get(
-//   "/get-old-board-title/:id",
-//   authMiddleware,
-//   boardController.fetchOldBoardTitle
-// );
-
-//get single board by id
+// Get single board by id
 router.get("/get-board/:id", authMiddleware, boardController.getSingleBoard);
 
-module.exports = router;
+export default router;

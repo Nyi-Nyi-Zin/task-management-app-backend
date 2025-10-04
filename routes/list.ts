@@ -1,34 +1,35 @@
-const { Router } = require("express");
-const authMiddleware = require("../middlewares/auth");
+// routes/list.ts
+import { Router } from "express";
+import authMiddleware from "../middlewares/auth";
+import listController from "../controllers/list";
+
 const router = Router();
 
-const listController = require("../controllers/list");
-
-//get all lists by boardId
+// Get all lists by boardId
 router.get("/get-lists/:boardId", authMiddleware, listController.getAllLists);
 
-//create new list
+// Create new list
 router.post("/board/create-list", authMiddleware, listController.createList);
 
-//update list
+// Update list
 router.put(
   "/board/update-list/:listId",
   authMiddleware,
   listController.updateList
 );
 
-//fetch old list title
+// Fetch old list title
 router.get(
   "/board/get-old-list-title/:listId",
   authMiddleware,
   listController.getOldListTitle
 );
 
-//delete list
+// Delete list
 router.delete(
   "/board/delete-list/:id",
   authMiddleware,
   listController.deleteList
 );
 
-module.exports = router;
+export default router;

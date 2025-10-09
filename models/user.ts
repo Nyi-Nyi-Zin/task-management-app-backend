@@ -1,40 +1,83 @@
-import { DataTypes, Model, Optional } from "sequelize";
+import { Model, DataTypes, Optional } from "sequelize";
+import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import sequelize from "../config/database";
 
-// Attributes in DB
-export interface UserAttributes {
+interface IUser {
   id: number;
+  name: string;
   email: string;
   password: string;
+  // role: "customer" | "admin";
+  // avatar?: {
+  //   url: string;
+  //   public_alt: string;
+  // };
+  // resetPasswordToken?: string;
+  // resetPasswordExpire?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-// For creation (id is optional)
-export interface UserCreationAttributes
-  extends Optional<UserAttributes, "id"> {}
+interface IUserCreationAttributes
+  extends Optional<
+    IUser,
+    | "id"
+    // | "role"
+    // | "avatar"
+    // | "resetPasswordToken"
+    // | "resetPasswordExpire"
+    | "createdAt"
+    | "updatedAt"
+  > {}
 
-// Model type
-export interface UserInstance
-  extends Model<UserAttributes, UserCreationAttributes>,
-    UserAttributes {}
+class User extends Model<IUser, IUserCreationAttributes> implements IUser {
+  public id!: number;
+  public name!: string;
+  public email!: string;
+  public password!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
 
-const User = sequelize.define<UserInstance>(
-  "User",
+  async matchPassword(enteredPassword: string): Promise<boolean> {
+    return await bcrypt.compare(enteredPassword, this.password);
+  }
+}
+
+User.init(
   {
     id: {
-      type: DataTypes.INTEGER.UNSIGNED,
+      type: DataTypes.INTEGER,
       autoIncrement: true,
       primaryKey: true,
+    },
+    name: {
+      type: DataTypes.STRING,
       allowNull: false,
     },
-    email: { type: DataTypes.STRING(128), allowNull: false, unique: true },
-    password: { type: DataTypes.STRING(128), allowNull: false },
+    email: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
+    },
+    password: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
+    sequelize,
     tableName: "users",
     timestamps: true,
+    hooks: {
+      beforeSave: async (user: User) => {
+        if (user.changed("password")) {
+          const salt = await bcrypt.genSalt(10);
+          user.password = await bcrypt.hash(user.password, salt);
+        }
+      },
+    },
   }
 );
 
-export default User;
+export { User };

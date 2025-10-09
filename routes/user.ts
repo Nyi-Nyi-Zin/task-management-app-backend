@@ -1,18 +1,20 @@
 import { Router, Request, Response, NextFunction } from "express";
 import { body } from "express-validator";
-import authMiddleware from "../middlewares/auth";
+import { protect } from "../middlewares/authMiddleware";
+import { validateRequest } from "../middlewares/validateRequest";
 import {
-  checkCurrentUser,
-  createUser,
+  // checkCurrentUser,
+  registerUser,
   getAllUsers,
   loginUser,
+  getUserInfo,
 } from "../controllers/auth";
 
 const router = Router();
 
 // Create new user
 router.post(
-  "/register",
+  "/auth/register",
   [
     body("email").trim().notEmpty().withMessage("Email cannot be empty."),
     body("password")
@@ -23,12 +25,12 @@ router.post(
       .withMessage("Password must have at least 5 characters."),
     body("email").trim().isEmail().withMessage("Please enter a valid E-mail!"),
   ],
-  createUser
+  registerUser
 );
 
 // Login user
 router.post(
-  "/login",
+  "/auth/login",
   [
     body("password").trim().notEmpty().withMessage("Password can't be empty."),
     body("email").trim().isEmail().withMessage("Please enter a valid E-mail!"),
@@ -36,10 +38,12 @@ router.post(
   loginUser
 );
 
-// Check if user is logged in
-router.get("/get-current-user", authMiddleware, checkCurrentUser);
+router.get("/me", protect, getUserInfo);
 
-// Get all users
-router.get("/users", getAllUsers);
+// router.get("/get-current-user", protect, checkCurrentUser);
+
+router.get("/users", protect, getAllUsers);
+
+// router.post("/logout", logout);
 
 export default router;

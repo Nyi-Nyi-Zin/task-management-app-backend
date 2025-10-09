@@ -1,23 +1,23 @@
 // routes/board.ts
 import { Router } from "express";
-import authMiddleware from "../middlewares/auth";
 import boardController from "../controllers/board";
+import { protect } from "../middlewares/authMiddleware";
 
 const router = Router();
 
 // Get all boards
-router.get("/get-boards", authMiddleware, boardController.getAllBoards);
+router.get("/get-boards", protect, boardController.getAllBoards);
 
 // Create new board
-router.post("/create-board", authMiddleware, boardController.createBoard);
+router.post("/create-board", protect, boardController.createBoard);
 
 // Update board
-router.put("/update-board/:id", authMiddleware, boardController.updateBoard);
+router.put("/update-board/:id", protect, boardController.updateBoard);
 
 // Delete board
-router.delete("/delete-board/:id", authMiddleware, boardController.deleteBoard);
+router.delete("/delete-board/:id", protect, boardController.deleteBoard);
 
 // Get single board by id
-router.get("/get-board/:id", authMiddleware, boardController.getSingleBoard);
+router.get("/get-board/:id", protect, boardController.getSingleBoard);
 
 export default router;

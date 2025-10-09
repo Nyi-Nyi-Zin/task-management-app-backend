@@ -1,35 +1,25 @@
-// routes/list.ts
 import { Router } from "express";
-import authMiddleware from "../middlewares/auth";
 import listController from "../controllers/list";
+import { protect } from "../middlewares/authMiddleware";
 
 const router = Router();
 
-// Get all lists by boardId
-router.get("/get-lists/:boardId", authMiddleware, listController.getAllLists);
+router.get("/get-lists/:boardId", protect, listController.getAllLists);
 
 // Create new list
-router.post("/board/create-list", authMiddleware, listController.createList);
+router.post("/board/create-list", protect, listController.createList);
 
 // Update list
-router.put(
-  "/board/update-list/:listId",
-  authMiddleware,
-  listController.updateList
-);
+router.put("/board/update-list/:listId", protect, listController.updateList);
 
 // Fetch old list title
 router.get(
   "/board/get-old-list-title/:listId",
-  authMiddleware,
+  protect,
   listController.getOldListTitle
 );
 
 // Delete list
-router.delete(
-  "/board/delete-list/:id",
-  authMiddleware,
-  listController.deleteList
-);
+router.delete("/board/delete-list/:id", protect, listController.deleteList);
 
 export default router;

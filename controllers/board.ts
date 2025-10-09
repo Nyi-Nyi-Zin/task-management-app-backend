@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import Board from "../models/board";
 import List from "../models/list";
 import Card from "../models/card";
-import User from "../models/user";
+import { User } from "../models/user";
 
 // Extend Request for authenticated routes
 interface AuthRequest extends Request {

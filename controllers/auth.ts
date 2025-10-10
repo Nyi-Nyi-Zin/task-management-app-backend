@@ -116,37 +116,6 @@ export const getUserInfo = asyncHandler(
   }
 );
 
-// CHECK current user
-// export const checkCurrentUser = asyncHandler(
-//   async (req: AuthRequest, res: Response): Promise<void> => {
-//     if (!req.userId) {
-//       res.status(401).json({
-//         isSuccess: false,
-//         message: "Unauthorized",
-//       });
-//       return;
-//     }
-
-//     const user = await User.findByPk(req.userId, {
-//       attributes: ["id", "email"],
-//     });
-
-//     if (!user) {
-//       res.status(401).json({
-//         isSuccess: false,
-//         message: "User not found",
-//       });
-//       return;
-//     }
-
-//     res.status(200).json({
-//       isSuccess: true,
-//       message: "User is authorized",
-//       user,
-//     });
-//   }
-// );
-
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   res.clearCookie("token", {
     httpOnly: true,

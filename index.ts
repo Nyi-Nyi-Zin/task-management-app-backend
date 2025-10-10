@@ -18,6 +18,11 @@ app.use(
   })
 );
 
+import { User } from "./models/user";
+import Board from "./models/board";
+import List from "./models/list";
+import Card from "./models/card";
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -26,6 +31,23 @@ app.use(authRoutes);
 app.use(boardRoutes);
 app.use(listRoutes);
 app.use(cardRoutes);
+
+User.hasMany(Board, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+  as: "boards",
+});
+Board.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+Board.hasMany(List, {
+  foreignKey: "boardId",
+  onDelete: "CASCADE",
+  as: "lists",
+});
+List.belongsTo(Board, { foreignKey: "boardId", as: "board" });
+
+List.hasMany(Card, { foreignKey: "listId", onDelete: "CASCADE", as: "cards" });
+Card.belongsTo(List, { foreignKey: "listId", as: "list" });
 
 sequelize
   .authenticate()

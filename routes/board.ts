@@ -6,18 +6,18 @@ import { protect } from "../middlewares/authMiddleware";
 const router = Router();
 
 // Get all boards
-router.get("/get-boards", protect, boardController.getAllBoards);
+router.get("/boards", protect, boardController.getAllBoards);
 
 // Create new board
-router.post("/create-board", protect, boardController.createBoard);
+router.post("/boards", protect, boardController.createBoard);
 
 // Update board
-router.put("/update-board/:id", protect, boardController.updateBoard);
+router.put("/boards/:id", protect, boardController.updateBoard);
 
 // Delete board
-router.delete("/delete-board/:id", protect, boardController.deleteBoard);
+router.delete("/boards/:id", protect, boardController.deleteBoard);
 
 // Get single board by id
-router.get("/get-board/:id", protect, boardController.getSingleBoard);
+router.get("/boards/:id", protect, boardController.getSingleBoard);
 
 export default router;

@@ -4,14 +4,19 @@ import List from "../models/list";
 import Card from "../models/card";
 import { User } from "../models/user";
 
-// Extend Request for authenticated routes
-interface AuthRequest extends Request {
-  userId?: number;
+interface IUserPayload {
+  id: number;
+  name: string;
+  email: string;
+}
+
+export interface AuthRequest extends Request {
+  user?: IUserPayload;
 }
 
 const createBoard = async (req: AuthRequest, res: Response) => {
   const { title } = req.body;
-  const userId = req.userId;
+  const userId = req.user?.id;
 
   if (!userId)
     return res
@@ -36,7 +41,7 @@ const createBoard = async (req: AuthRequest, res: Response) => {
 };
 
 const getAllBoards = async (req: AuthRequest, res: Response) => {
-  const userId = req.userId;
+  const userId = req.user.id;
   if (!userId)
     return res
       .status(400)
@@ -62,7 +67,7 @@ const getAllBoards = async (req: AuthRequest, res: Response) => {
 const updateBoard = async (req: AuthRequest, res: Response) => {
   const { title } = req.body;
   const { id } = req.params;
-  const userId = req.userId;
+  const userId = req.user.id;
 
   if (!title || title.trim() === "")
     return res

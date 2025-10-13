@@ -1,7 +1,20 @@
-import { DataTypes } from "sequelize";
+import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/database";
+import { ListAttributes, ListInstance } from "./list";
 
-const Board = sequelize.define(
+export interface BoardAttributes {
+  id?: number;
+  title: string;
+  userId: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export interface BoardInstance extends Model<BoardAttributes>, BoardAttributes {
+  lists?: ListInstance[];
+}
+
+const Board = sequelize.define<BoardInstance>(
   "Board",
   {
     id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },

@@ -1,132 +1,193 @@
-// controllers/list.ts
 import { Request, Response } from "express";
 import List from "../models/list";
+import Board from "../models/board";
+import Card from "../models/card";
 
 interface AuthRequest extends Request {
-  userId?: number;
+  user?: { id: number };
 }
 
+// ✅ Create a new list
 const createList = async (req: AuthRequest, res: Response) => {
-  const { title, boardId } = req.body;
-  if (!title || title.trim() === "") {
-    return res.status(400).json({
-      message: "Title cannot be empty.",
-      isSuccess: false,
-    });
-  }
+  const { title } = req.body;
+  const boardId = Number(req.params.boardId);
+  const userId = req.user?.id;
+
+  if (!title?.trim())
+    return res
+      .status(400)
+      .json({ isSuccess: false, message: "Title cannot be empty." });
+  if (isNaN(boardId))
+    return res
+      .status(400)
+      .json({ isSuccess: false, message: "Invalid board ID." });
 
   try {
-    const newList = await List.create({ title, boardId });
+    const board = await Board.findOne({ where: { id: boardId, userId } });
+    if (!board)
+      return res
+        .status(403)
+        .json({ isSuccess: false, message: "Access denied." });
+
+    const newList = await List.create({ title: title.trim(), boardId });
+
     return res.status(201).json({
-      message: "List created successfully",
       isSuccess: true,
-      list: newList,
+      message: "List created successfully",
+      data: newList,
     });
   } catch (error: any) {
     return res.status(500).json({
-      message: "Error creating List",
-      error,
+      isSuccess: false,
+      message: "Error creating list",
+      error: error.message,
     });
   }
 };
 
-// Get all lists for a board
-const getAllLists = async (req: Request, res: Response) => {
-  const { boardId } = req.params;
+// ✅ Get all lists under a board
+const getAllLists = async (req: AuthRequest, res: Response) => {
+  const boardId = Number(req.params.boardId);
+  const userId = req.user?.id;
 
   try {
+    const board = await Board.findOne({ where: { id: boardId, userId } });
+    if (!board)
+      return res
+        .status(403)
+        .json({ isSuccess: false, message: "Access denied." });
+
     const lists = await List.findAll({
       where: { boardId },
-      order: [["createdAt", "ASC"]],
+      include: [{ model: Card, as: "cards" }],
+      order: [
+        ["createdAt", "ASC"],
+        [{ model: Card, as: "cards" }, "createdAt", "ASC"],
+      ],
     });
 
-    res.status(200).json({
-      message: "Lists fetched successfully",
-      lists,
+    return res.status(200).json({
       isSuccess: true,
+      message: "Lists fetched successfully",
+      data: lists,
     });
   } catch (error: any) {
-    res.status(500).json({
+    return res.status(500).json({
+      isSuccess: false,
       message: "Error fetching lists",
-      error,
-      isSuccess: false,
+      error: error.message,
     });
   }
 };
 
-// Update a list by ID
-const updateList = async (req: Request, res: Response) => {
+// ✅ Get single list
+const getListById = async (req: AuthRequest, res: Response) => {
+  const boardId = Number(req.params.boardId);
+  const listId = Number(req.params.listId);
+  const userId = req.user?.id;
+
+  try {
+    const board = await Board.findOne({ where: { id: boardId, userId } });
+    if (!board)
+      return res
+        .status(403)
+        .json({ isSuccess: false, message: "Access denied." });
+
+    const list = await List.findOne({
+      where: { id: listId, boardId },
+      include: [{ model: Card, as: "cards" }],
+    });
+    if (!list)
+      return res
+        .status(404)
+        .json({ isSuccess: false, message: "List not found" });
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "List fetched successfully",
+      data: list,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      isSuccess: false,
+      message: "Error fetching list",
+      error: error.message,
+    });
+  }
+};
+
+// ✅ Update list (title only)
+const updateList = async (req: AuthRequest, res: Response) => {
   const { title } = req.body;
-  const { listId } = req.params;
+  const boardId = Number(req.params.boardId);
+  const listId = Number(req.params.listId);
+  const userId = req.user?.id;
 
-  if (!title || title.trim() === "") {
-    return res.status(400).json({
-      message: "Title cannot be empty.",
+  try {
+    const board = await Board.findOne({ where: { id: boardId, userId } });
+    if (!board)
+      return res
+        .status(403)
+        .json({ isSuccess: false, message: "Access denied." });
+
+    const list = await List.findOne({ where: { id: listId, boardId } });
+    if (!list)
+      return res
+        .status(404)
+        .json({ isSuccess: false, message: "List not found" });
+
+    await list.update({ title: title || list.title });
+
+    return res.status(200).json({
+      isSuccess: true,
+      message: "List updated successfully",
+      data: list,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
       isSuccess: false,
+      message: "Error updating list",
+      error: error.message,
     });
   }
-
-  try {
-    const list = await List.findOne({ where: { id: listId } });
-    if (!list) {
-      return res
-        .status(404)
-        .json({ message: "List not found", isSuccess: false });
-    }
-
-    await List.update({ title }, { where: { id: listId } });
-    res
-      .status(200)
-      .json({ message: "List updated successfully", isSuccess: true });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message, isSuccess: false });
-  }
 };
 
-// Delete a list by ID
-const deleteList = async (req: Request, res: Response) => {
-  const { id } = req.params;
+// ✅ Delete list
+const deleteList = async (req: AuthRequest, res: Response) => {
+  const boardId = Number(req.params.boardId);
+  const listId = Number(req.params.listId);
+  const userId = req.user?.id;
 
   try {
-    const listDoc = await List.findOne({ where: { id } });
-    if (!listDoc) {
+    const board = await Board.findOne({ where: { id: boardId, userId } });
+    if (!board)
+      return res
+        .status(403)
+        .json({ isSuccess: false, message: "Access denied." });
+
+    const list = await List.findOne({ where: { id: listId, boardId } });
+    if (!list)
       return res
         .status(404)
-        .json({ message: "List not found", isSuccess: false });
-    }
+        .json({ isSuccess: false, message: "List not found" });
 
-    await List.destroy({ where: { id } });
-    res
+    await list.destroy();
+    return res
       .status(200)
-      .json({ message: "List deleted successfully", isSuccess: true });
+      .json({ isSuccess: true, message: "List deleted successfully" });
   } catch (error: any) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// Fetch old list title
-const getOldListTitle = async (req: Request, res: Response) => {
-  const { listId } = req.params;
-
-  try {
-    const list = await List.findByPk(listId);
-    if (!list) {
-      return res
-        .status(404)
-        .json({ message: "List not found", isSuccess: false });
-    }
-    res
-      .status(200)
-      .json({ isSuccess: true, title: list.getDataValue("title") });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({
+      isSuccess: false,
+      message: "Error deleting list",
+      error: error.message,
+    });
   }
 };
 
 export default {
   createList,
   getAllLists,
+  getListById,
   updateList,
   deleteList,
-  getOldListTitle,
 };

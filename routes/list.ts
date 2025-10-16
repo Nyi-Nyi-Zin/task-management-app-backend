@@ -1,25 +1,35 @@
 import { Router } from "express";
 import listController from "../controllers/list";
 import { protect } from "../middlewares/authMiddleware";
+import list from "../controllers/list";
 
 const router = Router();
 
-router.get("/get-lists/:boardId", protect, listController.getAllLists);
+// ✅ Get all lists for a specific board
+router.get("/boards/:boardId/lists", protect, listController.getAllLists);
 
-// Create new list
-router.post("/board/create-list", protect, listController.createList);
+// ✅ Create a new list under a specific board
+router.post("/boards/:boardId/lists", protect, listController.createList);
 
-// Update list
-router.put("/board/update-list/:listId", protect, listController.updateList);
-
-// Fetch old list title
+// ✅ Get a single list by ID under a specific board
 router.get(
-  "/board/get-old-list-title/:listId",
+  "/boards/:boardId/lists/:listId",
   protect,
-  listController.getOldListTitle
+  listController.getListById
 );
 
-// Delete list
-router.delete("/board/delete-list/:id", protect, listController.deleteList);
+// ✅ Update a list by ID under a specific board
+router.put(
+  "/boards/:boardId/lists/:listId",
+  protect,
+  listController.updateList
+);
+
+// ✅ Delete a list by ID under a specific board
+router.delete(
+  "/boards/:boardId/lists/:listId",
+  protect,
+  listController.deleteList
+);
 
 export default router;

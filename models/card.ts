@@ -7,6 +7,7 @@ export interface CardAttributes {
   title: string;
   description?: string;
   listId: number;
+  isDone?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -34,6 +35,11 @@ const Card = sequelize.define<CardInstance>(
     listId: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    isDone: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
     createdAt: {
       type: DataTypes.DATE,

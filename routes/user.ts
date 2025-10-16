@@ -1,18 +1,18 @@
-import { Router, Request, Response, NextFunction } from "express";
+import { Router } from "express";
 import { body } from "express-validator";
 import { protect } from "../middlewares/authMiddleware";
 import { validateRequest } from "../middlewares/validateRequest";
 import {
-  // checkCurrentUser,
   registerUser,
-  getAllUsers,
   loginUser,
-  getUserInfo,
+  getCurrentUser,
+  logout,
+  refreshToken,
 } from "../controllers/auth";
 
 const router = Router();
 
-// Create new user
+// Register
 router.post(
   "/auth/register",
   [
@@ -28,7 +28,7 @@ router.post(
   registerUser
 );
 
-// Login user
+// Login
 router.post(
   "/auth/login",
   [
@@ -38,12 +38,12 @@ router.post(
   loginUser
 );
 
-router.get("/me", protect, getUserInfo);
+router.post("/auth/refresh", refreshToken);
 
-// router.get("/get-current-user", protect, checkCurrentUser);
+// Get current user
+router.get("/me", protect, getCurrentUser);
 
-router.get("/users", protect, getAllUsers);
-
-// router.post("/logout", logout);
+// Logout
+router.post("/logout", logout);
 
 export default router;

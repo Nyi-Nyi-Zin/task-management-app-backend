@@ -32,6 +32,15 @@ app.use(boardRoutes);
 app.use(listRoutes);
 app.use(cardRoutes);
 
+// Global error handler
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  const statusCode = res.statusCode && res.statusCode !== 200 ? res.statusCode : 500;
+  res.status(statusCode).json({
+    isSuccess: false,
+    message: err.message || "Internal Server Error",
+  });
+});
+
 User.hasMany(Board, {
   foreignKey: "userId",
   onDelete: "CASCADE",
